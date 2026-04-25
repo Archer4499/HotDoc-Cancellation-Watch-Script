@@ -26,8 +26,8 @@
     function formatDateTime(dateTime) {
         if (!dateTime) dateTime = new Date();
 
-        const options = {weekday: 'short', day: 'numeric', month: 'short',
-                         hour: 'numeric', minute: 'numeric'}
+        const options = { weekday: 'short', day: 'numeric', month: 'short',
+                          hour: 'numeric', minute: 'numeric' }
         return dateTime.toLocaleString(undefined, options);
     }
 
@@ -74,16 +74,13 @@
         if (nextAppointmentContianer && nextAppointmentContianer.innerText) {
             // Future date outside current display range
             return parseDateTime(nextAppointmentContianer.innerText.trim());
+
         } else {
             // First slot in the first day to have slots in the current display range
-            const timeSlotsContainer = timesElement.querySelector('.AvailabilitySlotList-timeSlots');
-            if (timeSlotsContainer) {
-                for (const day of timeSlotsContainer.children) {
-                    if (day.children.length > 0) {
-                        const datetime = day.firstElementChild.firstElementChild.ariaLabel.trim();
-                        return parseDateTime(datetime);
-                    }
-                }
+            const firstTimeSlot = timesElement.querySelector('.AvailabilitySlotList-slot');
+
+            if (firstTimeSlot) {
+                return parseDateTime(firstTimeSlot.ariaLabel.trim());
             }
         }
         return null;
@@ -95,7 +92,7 @@
             for (const node of mutation.removedNodes) {
                 if (getLoaderElement(node)) {
                     let nextAppointmentNew = getNextAppointment(mutation.target);
-                    if (nextAppointmentNew && nextAppointment !== nextAppointmentNew) {
+                    if (nextAppointmentNew && nextAppointmentNew?.getTime() !== nextAppointment?.getTime()) {
                         if (nextAppointmentNew < nextAppointment) {
                             triggerAlert(nextAppointmentNew, nextAppointment);
                             console.log(`Closer appointment: Old: ${nextAppointment} New: ${nextAppointmentNew}`);
