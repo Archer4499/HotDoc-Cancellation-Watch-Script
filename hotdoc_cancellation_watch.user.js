@@ -16,7 +16,6 @@
 
 // TODO: HotDoc is a single page site, so it doesn't trigger the script match when navigating without a refresh
 // TODO: Show indicator that this is working/watching
-// TODO: Handle new/old dates across years for sorting
 
 (function() {
     'use strict';
@@ -52,18 +51,30 @@
     }
 
     function parseDateTime(datetimeString) {
+        // The two formats currently being parsed are:
+        // 20 May, 9:00 am
+        // 9:00 am Wednesday May 20
+
         // TODO: more forgiving datetime parsing
-        let datetime = Date.parse(datetimeString)
-        if (!isNaN(datetime)) {
-            return new Date(datetime);
-        }
 
-        const datetimeStringClean = datetimeString.replace(/ ?\w*?day/i, '');
-        datetime = Date.parse(datetimeStringClean)
-        if (!isNaN(datetime)) {
-            return new Date(datetime);
-        }
+        if (!datetimeString) return null;
 
+        // Clean string: remove day names to help Date.parse
+        const cleanStr = datetimeString.replace(/(Mon|Tue|Wed|Thu|Fri|Sat|Sun)\w*,?\s?/gi, '').trim();
+
+        let parsedDate = new Date(cleanStr);
+
+        if (!isNaN(parsedDate)) {
+            const now = new Date();
+            // If the parsed month is behind the current month (e.g., it's Dec, parsed is Jan), the appointment is next year.
+            // TODO: Test to see how cross year appointments are shown on HotDoc
+            if (parsedDate.getMonth() < now.getMonth()) {
+                parsedDate.setFullYear(now.getFullYear() + 1);
+            } else {
+                parsedDate.setFullYear(now.getFullYear());
+            }
+            return parsedDate;
+        }
         return null;
     }
 
